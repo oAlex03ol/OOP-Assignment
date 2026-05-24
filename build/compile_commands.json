@@ -1,0 +1,26 @@
+[
+{
+  "directory": "/mnt/c/Users/user/Desktop/物件導向(Qt)/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I\"/mnt/c/Users/user/Desktop/物件導向(Qt)/build/HyperFS_autogen/include\" -isystem /usr/include/x86_64-linux-gnu/qt6/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt6 -isystem /usr/include/x86_64-linux-gnu/qt6/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt6/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt6/QtGui -std=gnu++20 -fPIC -o CMakeFiles/HyperFS.dir/HyperFS_autogen/mocs_compilation.cpp.o -c \"/mnt/c/Users/user/Desktop/物件導向(Qt)/build/HyperFS_autogen/mocs_compilation.cpp\"",
+  "file": "/mnt/c/Users/user/Desktop/物件導向(Qt)/build/HyperFS_autogen/mocs_compilation.cpp",
+  "output": "CMakeFiles/HyperFS.dir/HyperFS_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/mnt/c/Users/user/Desktop/物件導向(Qt)/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I\"/mnt/c/Users/user/Desktop/物件導向(Qt)/build/HyperFS_autogen/include\" -isystem /usr/include/x86_64-linux-gnu/qt6/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt6 -isystem /usr/include/x86_64-linux-gnu/qt6/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt6/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt6/QtGui -std=gnu++20 -fPIC -o CMakeFiles/HyperFS.dir/main.cpp.o -c \"/mnt/c/Users/user/Desktop/物件導向(Qt)/main.cpp\"",
+  "file": "/mnt/c/Users/user/Desktop/物件導向(Qt)/main.cpp",
+  "output": "CMakeFiles/HyperFS.dir/main.cpp.o"
+},
+{
+  "directory": "/mnt/c/Users/user/Desktop/物件導向(Qt)/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I\"/mnt/c/Users/user/Desktop/物件導向(Qt)/build/HyperFS_autogen/include\" -isystem /usr/include/x86_64-linux-gnu/qt6/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt6 -isystem /usr/include/x86_64-linux-gnu/qt6/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt6/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt6/QtGui -std=gnu++20 -fPIC -o CMakeFiles/HyperFS.dir/MainWindow.cpp.o -c \"/mnt/c/Users/user/Desktop/物件導向(Qt)/MainWindow.cpp\"",
+  "file": "/mnt/c/Users/user/Desktop/物件導向(Qt)/MainWindow.cpp",
+  "output": "CMakeFiles/HyperFS.dir/MainWindow.cpp.o"
+},
+{
+  "directory": "/mnt/c/Users/user/Desktop/物件導向(Qt)/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I\"/mnt/c/Users/user/Desktop/物件導向(Qt)/build/HyperFS_autogen/include\" -isystem /usr/include/x86_64-linux-gnu/qt6/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt6 -isystem /usr/include/x86_64-linux-gnu/qt6/QtCore -isystem /usr/lib/x86_64-linux-gnu/qt6/mkspecs/linux-g++ -isystem /usr/include/x86_64-linux-gnu/qt6/QtGui -std=gnu++20 -fPIC -o CMakeFiles/HyperFS.dir/CanvasComponents.cpp.o -c \"/mnt/c/Users/user/Desktop/物件導向(Qt)/CanvasComponents.cpp\"",
+  "file": "/mnt/c/Users/user/Desktop/物件導向(Qt)/CanvasComponents.cpp",
+  "output": "CMakeFiles/HyperFS.dir/CanvasComponents.cpp.o"
+}
+]
