@@ -7,6 +7,7 @@
 #include <QStackedWidget>
 #include <QTableWidget>
 #include <QLineEdit>
+#include <QSoundEffect>
 #include "VisualNode.h"
 
 class CustomView : public QGraphicsView {

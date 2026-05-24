@@ -7,7 +7,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
-#include <cstdint> // 確保 uintmax_t 能夠正常編譯
+#include <cstdint>
 
 namespace fs = std::filesystem;
 

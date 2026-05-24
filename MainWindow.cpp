@@ -67,15 +67,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
 void MainWindow::setupUI() {
     QWidget* centralWidget = new QWidget(this);
-    // Catppuccin Mocha - Base Background (極深星空藍灰)
     centralWidget->setStyleSheet("background-color: #11111b;"); 
     QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // --- 左側控制面板 ---
     QWidget* controlPanel = new QWidget(this);
     controlPanel->setFixedWidth(260);
-    // Catppuccin Mocha - Mantle Background & Surface Border
+
     controlPanel->setStyleSheet("background-color: #181825; border-right: 1px solid #313244;");
     
     QVBoxLayout* btnLayout = new QVBoxLayout(controlPanel);
@@ -84,7 +82,6 @@ void MainWindow::setupUI() {
 
     btnToggleView = new QPushButton("Switch viewport");
 
-    // 動畫容器
     canvasActionContainer = new QWidget(controlPanel);
     QVBoxLayout* actionLayout = new QVBoxLayout(canvasActionContainer);
     actionLayout->setContentsMargins(0, 0, 0, 0);
@@ -105,7 +102,7 @@ void MainWindow::setupUI() {
     QPushButton* btnCreateFile   = new QPushButton("New File");
     QPushButton* btnDelete       = new QPushButton("Delete");
 
-    // ─── 樣式生成器 (修正：移除 Qt 不支援的 transition 屬性，加上微邊框提升立體感) ───
+
     auto makePremiumStyle = [](const QString& colorHex, int r, int g, int b) {
         return QString(
             "QPushButton { background-color: rgba(%2, %3, %4, 0.12); color: %1; border: 1px solid rgba(%2, %3, %4, 0.3); border-radius: 8px; padding: 12px; font-weight: bold; }"
@@ -113,21 +110,20 @@ void MainWindow::setupUI() {
         ).arg(colorHex).arg(r).arg(g).arg(b);
     };
 
-    // 使用 Catppuccin Mocha 官方色系 (嚴格確保和諧)
-    // 1. 紫色 (Mauve): #cba6f7
+
     btnToggleView->setStyleSheet(makePremiumStyle("#cba6f7", 203, 166, 247));   
     
-    // 2. 綠色 (Green): #a6e3a1
+
     QString catppuccinGreen = makePremiumStyle("#a6e3a1", 166, 227, 161);
     btnAutoLayout->setStyleSheet(catppuccinGreen);    
     btnMoveMode->setStyleSheet(catppuccinGreen);     
     
-    // 3. 藍色 (Blue): #89b4fa
+
     QString catppuccinBlue = makePremiumStyle("#89b4fa", 137, 180, 250);
     btnCreateFolder->setStyleSheet(catppuccinBlue); 
     btnCreateFile->setStyleSheet(catppuccinBlue);     
     
-    // 4. 紅色 (Red): #f38ba8
+
     btnDelete->setStyleSheet(makePremiumStyle("#f38ba8", 243, 139, 168));       
 
     btnLayout->addWidget(btnToggleView);
@@ -137,7 +133,7 @@ void MainWindow::setupUI() {
     btnLayout->addWidget(btnDelete);
     btnLayout->addStretch();
 
-    // --- 右側畫布 ---
+
     viewStack = new QStackedWidget(this);
 
     scene = new QGraphicsScene(this);
@@ -151,7 +147,7 @@ void MainWindow::setupUI() {
 
     viewStack->addWidget(canvasView); 
 
-    // --- 右側清單 ---
+
     QWidget* listContainer = new QWidget(this);
     QVBoxLayout* listLayout = new QVBoxLayout(listContainer);
     listLayout->setContentsMargins(30, 30, 30, 30);
@@ -159,7 +155,6 @@ void MainWindow::setupUI() {
 
     searchBar = new QLineEdit(this);
     searchBar->setPlaceholderText("🔍 Search files or folders..."); 
-    // Catppuccin Mocha 統一清單配色
     searchBar->setStyleSheet(
         "QLineEdit { background-color: #1e1e2e; color: #cdd6f4; border: 1px solid #313244; border-radius: 6px; padding: 12px; font-size: 14px; font-weight: bold; }"
         "QLineEdit:focus { border: 1px solid #89b4fa; }"
@@ -274,24 +269,21 @@ void MainWindow::onToggleView() {
         viewStack->setCurrentIndex(1);
 
         QPropertyAnimation *anim = new QPropertyAnimation(canvasActionContainer, "maximumHeight");
-        anim->setDuration(300); 
+        anim->setDuration(300);
         anim->setStartValue(canvasActionContainer->height());
         anim->setEndValue(0);
-        anim->setEasingCurve(QEasingCurve::OutQuart); 
-        connect(anim, &QPropertyAnimation::finished, canvasActionContainer, &QWidget::hide);
+        anim->setEasingCurve(QEasingCurve::OutQuart);
         anim->start(QAbstractAnimation::DeleteWhenStopped);
 
     } else {
         viewStack->setCurrentIndex(0);
 
-        canvasActionContainer->show(); 
+        int singleHeight = btnToggleView->height() > 0 ? btnToggleView->height() : 45;
+        int targetHeight = (singleHeight * 2) + 15;
+        
         QPropertyAnimation *anim = new QPropertyAnimation(canvasActionContainer, "maximumHeight");
         anim->setDuration(300);
         anim->setStartValue(0);
-        
-        int singleHeight = btnToggleView->height() > 0 ? btnToggleView->height() : 45;
-        int targetHeight = (singleHeight * 2) + 15; 
-        
         anim->setEndValue(targetHeight); 
         anim->setEasingCurve(QEasingCurve::OutQuart);
         anim->start(QAbstractAnimation::DeleteWhenStopped);
@@ -361,13 +353,12 @@ void MainWindow::onCreateFolder() {
     }
 
     if (!targetNode || targetNode->getFSNode()->getType() != NodeType::Folder) {
-        system("paplay ../sound/fahhhhh.mp3 &");
         QMessageBox::warning(this, "FAHHHHHHHHHHHHHHHHHH", "Please select a [Folder] node first!");
         return;
     }
 
     bool ok;
-    QString name = QInputDialog::getText(this, "Create new folder", "Please enter a name:", QLineEdit::Normal, "", &ok);
+    QString name = QInputDialog::getText(this, "Create new folder", "Please enter a name:                       ", QLineEdit::Normal, "", &ok);
     if (!ok || name.isEmpty()) return;
 
     auto parentFolder = std::dynamic_pointer_cast<FolderNode>(targetNode->getFSNode());
@@ -412,7 +403,7 @@ void MainWindow::onCreateFile() {
     }
 
     bool ok;
-    QString name = QInputDialog::getText(this, "Create new file", "Please enter a name:", QLineEdit::Normal, "", &ok);
+    QString name = QInputDialog::getText(this, "Create new file", "Please enter a name:                       ", QLineEdit::Normal, "", &ok);
     if (!ok || name.isEmpty()) return;
 
     auto parentFolder = std::dynamic_pointer_cast<FolderNode>(targetNode->getFSNode());
