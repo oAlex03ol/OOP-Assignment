@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(SOURCES
     main.cpp
@@ -27,5 +27,4 @@ set(HEADERS
 add_executable(HyperFS ${SOURCES} ${HEADERS})
 target_link_libraries(HyperFS PRIVATE
     Qt6::Widgets
-    Qt6::Multimedia
 )

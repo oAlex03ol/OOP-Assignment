@@ -30,7 +30,7 @@ void VisualNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     Q_UNUSED(option); Q_UNUSED(widget); // These are macros used to preventing unused parameter warnings.
     painter->setRenderHint(QPainter::Antialiasing); // Enable anti-aliasing
     
-    QFont font("Microsoft JhengHei", 12.5, QFont::Bold);    // Font, Size, Bold
+    QFont font("Microsoft JhengHei", 12, QFont::Bold);    // Font, Size, Bold
     painter->setFont(font);
     
     QColor borderColor = fsNode->getType() == NodeType::Folder ? QColor("#00adb5") : QColor("#ff2e63");
@@ -45,7 +45,7 @@ void VisualNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
         bgColor.setAlpha(80);               // Keep transparent feeling
     }
     painter->setBrush(QBrush(bgColor)); // BackGround
-    painter->drawRoundedRect(-70, -25, 140, 50, 8, 8);  // x, y, width, height, radiusX, radiusY
+    painter->drawRoundedRect(-120, -25, 240, 50, 8, 8);  // x, y, width, height, radiusX, radiusY
 
     // For text orientation
     /*std::string prefix = (fsNode->getType() == NodeType::Folder) ? "📁 " : "📄 ";
@@ -53,9 +53,9 @@ void VisualNode::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
     // For icon orientation
     QPixmap icon(fsNode->getType() == NodeType::Folder ? "../icons/Folder.png" : "../icons/File.png" );
-    painter->drawPixmap(-60, -12, 24, 24, icon);
-    QString text = QString::fromStdString(fsNode->getName());
-    painter->drawText(QRectF(-30, -20, 90, 40), Qt::AlignVCenter, text);
+    painter->drawPixmap(-110, -12, 24, 24, icon);
+    QString text = QString::fromStdString(fsNode->getName() + " / " + fsNode->getSizeString());
+    painter->drawText(QRectF(-80, -20, 190, 40), Qt::AlignVCenter, text);
 
     /*painter->setPen(QColor("#eeeeee"));
     painter->drawText(QRectF(-65, -20, 130, 40), Qt::AlignCenter, text);*/
