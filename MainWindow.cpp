@@ -12,6 +12,13 @@
 #include <cstdlib>
 #include <algorithm>    
 
+namespace {
+bool isValidItemName(const QString& name) {
+    return !name.isEmpty() && name != "." && name != ".." &&
+           !name.contains('/') && !name.contains('\\');
+}
+}
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     resize(1280, 720);
     setWindowTitle("Group 1 - File Explorer");
@@ -24,6 +31,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     rootVisualNode = new VisualNode(rootDataNode);
     scene->addItem(rootVisualNode);
+    rootVisualNode->setSelected(true);
+    selectedVisualNode = rootVisualNode;
 
     auto createDefaultNode = [this](VisualNode* parentVNode, const std::string& name, bool isFolder) -> VisualNode* {
         if (!parentVNode) return nullptr;
@@ -100,6 +109,7 @@ void MainWindow::setupUI() {
 
     QPushButton* btnCreateFolder = new QPushButton("New Folder");
     QPushButton* btnCreateFile   = new QPushButton("New File");
+    QPushButton* btnRename       = new QPushButton("Rename");
     QPushButton* btnDelete       = new QPushButton("Delete");
 
 
@@ -122,6 +132,7 @@ void MainWindow::setupUI() {
     QString catppuccinBlue = makePremiumStyle("#89b4fa", 137, 180, 250);
     btnCreateFolder->setStyleSheet(catppuccinBlue); 
     btnCreateFile->setStyleSheet(catppuccinBlue);     
+    btnRename->setStyleSheet(catppuccinBlue);
     
 
     btnDelete->setStyleSheet(makePremiumStyle("#f38ba8", 243, 139, 168));       
@@ -130,6 +141,7 @@ void MainWindow::setupUI() {
     btnLayout->addWidget(canvasActionContainer); 
     btnLayout->addWidget(btnCreateFolder);
     btnLayout->addWidget(btnCreateFile);
+    btnLayout->addWidget(btnRename);
     btnLayout->addWidget(btnDelete);
     btnLayout->addStretch();
 
@@ -188,6 +200,7 @@ void MainWindow::setupUI() {
     connect(btnMoveMode, &QPushButton::clicked, this, &MainWindow::onToggleLayoutMode);
     connect(btnCreateFolder, &QPushButton::clicked, this, &MainWindow::onCreateFolder);
     connect(btnCreateFile, &QPushButton::clicked, this, &MainWindow::onCreateFile);
+    connect(btnRename, &QPushButton::clicked, this, &MainWindow::onRenameItem);
     connect(btnDelete, &QPushButton::clicked, this, &MainWindow::onDeleteItem);
 }
 
@@ -250,15 +263,16 @@ void MainWindow::autoLayoutTree() {
 }
 
 void MainWindow::layoutNode(VisualNode* node, int depth, float& currentX) {
+    constexpr float nodeSpacing = 280.0f;
     if (node->getChildNodes().empty()) {
         node->setPos(currentX, depth * 120);
-        currentX += 180;
+        currentX += nodeSpacing;
     } else {
         float startX = currentX;
         for (VisualNode* child : node->getChildNodes()) {
             layoutNode(child, depth + 1, currentX);
         }
-        float endX = currentX - 180;
+        float endX = currentX - nodeSpacing;
         node->setPos((startX + endX) / 2.0f, depth * 120);
     }
 }
@@ -293,12 +307,16 @@ void MainWindow::onToggleView() {
 void MainWindow::refreshListView() {
     fileTable->setRowCount(0);
     searchBar->clear();
+    int selectedRow = -1;
 
-    auto const addNodeToTable = [this](auto& self, VisualNode* vNode, int depth) -> void {
+    auto const addNodeToTable = [this, &selectedRow](auto& self, VisualNode* vNode, int depth) -> void {
         if (!vNode) return;
         auto node = vNode->getFSNode();
         int row = fileTable->rowCount();
         fileTable->insertRow(row);
+        if (vNode == selectedVisualNode) {
+            selectedRow = row;
+        }
 
         std::string indent = std::string(depth * 4, ' ');
         std::string prefix = (node->getType() == NodeType::Folder) ? "📁 " : "📄 ";
@@ -318,6 +336,14 @@ void MainWindow::refreshListView() {
 
     if (rootVisualNode) {
         addNodeToTable(addNodeToTable, rootVisualNode, 0);
+    }
+
+    if (fileTable->rowCount() > 0) {
+        if (selectedRow < 0) {
+            selectedRow = 0;
+        }
+        fileTable->setCurrentCell(selectedRow, 0);
+        fileTable->selectRow(selectedRow);
     }
 }
 
@@ -360,24 +386,36 @@ void MainWindow::onCreateFolder() {
     bool ok;
     QString name = QInputDialog::getText(this, "Create new folder", "Please enter a name:                       ", QLineEdit::Normal, "", &ok);
     if (!ok || name.isEmpty()) return;
+    if (!isValidItemName(name)) {
+        QMessageBox::warning(this, "Create folder", "Please enter a valid folder name.");
+        return;
+    }
 
     auto parentFolder = std::dynamic_pointer_cast<FolderNode>(targetNode->getFSNode());
     if (parentFolder) {
-        auto childData = parentFolder->createChildFolder(name.toStdString()); 
-        VisualNode* childNode = new VisualNode(childData);
-        childNode->setFlag(QGraphicsItem::ItemIsMovable, isFreeMoveEnabled);
-        scene->addItem(childNode);
-        
-        childNode->setParentNode(targetNode);
-        targetNode->addChildNode(childNode);
+        try {
+            if (fs::exists(parentFolder->getPath() / name.toStdString())) {
+                QMessageBox::warning(this, "Create folder", "An item with the same name already exists.");
+                return;
+            }
+            auto childData = parentFolder->createChildFolder(name.toStdString());
+            VisualNode* childNode = new VisualNode(childData);
+            childNode->setFlag(QGraphicsItem::ItemIsMovable, isFreeMoveEnabled);
+            scene->addItem(childNode);
 
-        CanvasEdge* edge = new CanvasEdge(targetNode, childNode);
-        scene->addItem(edge);
-        targetNode->addEdge(edge);
-        childNode->addEdge(edge);
-        
-        if (!isFreeMoveEnabled) autoLayoutTree();
-        if (viewStack->currentIndex() == 1) refreshListView();
+            childNode->setParentNode(targetNode);
+            targetNode->addChildNode(childNode);
+
+            CanvasEdge* edge = new CanvasEdge(targetNode, childNode);
+            scene->addItem(edge);
+            targetNode->addEdge(edge);
+            childNode->addEdge(edge);
+
+            if (!isFreeMoveEnabled) autoLayoutTree();
+            if (viewStack->currentIndex() == 1) refreshListView();
+        } catch (const std::exception& e) {
+            QMessageBox::critical(this, "Create folder failed", e.what());
+        }
     }
 }
 
@@ -405,24 +443,81 @@ void MainWindow::onCreateFile() {
     bool ok;
     QString name = QInputDialog::getText(this, "Create new file", "Please enter a name:                       ", QLineEdit::Normal, "", &ok);
     if (!ok || name.isEmpty()) return;
+    if (!isValidItemName(name)) {
+        QMessageBox::warning(this, "Create file", "Please enter a valid file name.");
+        return;
+    }
 
     auto parentFolder = std::dynamic_pointer_cast<FolderNode>(targetNode->getFSNode());
     if (parentFolder) {
-        auto childData = parentFolder->createChildFile(name.toStdString()); 
-        VisualNode* childNode = new VisualNode(childData);
-        childNode->setFlag(QGraphicsItem::ItemIsMovable, isFreeMoveEnabled);
-        scene->addItem(childNode);
-        
-        childNode->setParentNode(targetNode);
-        targetNode->addChildNode(childNode);
+        if (fs::exists(parentFolder->getPath() / name.toStdString())) {
+            QMessageBox::warning(this, "Create file", "An item with the same name already exists.");
+            return;
+        }
+        int size = QInputDialog::getInt(this, "Set file size", "Size (bytes):", 0, 0, 1073741824, 1, &ok);
+        if (!ok) return;
+        try {
+            auto childData = parentFolder->createChildFile(name.toStdString(), static_cast<uintmax_t>(size));
+            VisualNode* childNode = new VisualNode(childData);
+            childNode->setFlag(QGraphicsItem::ItemIsMovable, isFreeMoveEnabled);
+            scene->addItem(childNode);
 
-        CanvasEdge* edge = new CanvasEdge(targetNode, childNode);
-        scene->addItem(edge);
-        targetNode->addEdge(edge);
-        childNode->addEdge(edge);
-        
-        if (!isFreeMoveEnabled) autoLayoutTree();
+            childNode->setParentNode(targetNode);
+            targetNode->addChildNode(childNode);
+
+            CanvasEdge* edge = new CanvasEdge(targetNode, childNode);
+            scene->addItem(edge);
+            targetNode->addEdge(edge);
+            childNode->addEdge(edge);
+
+            if (!isFreeMoveEnabled) autoLayoutTree();
+            if (viewStack->currentIndex() == 1) refreshListView();
+        } catch (const std::exception& e) {
+            QMessageBox::critical(this, "Create file failed", e.what());
+        }
+    }
+}
+
+void MainWindow::onRenameItem() {
+    VisualNode* targetNode = nullptr;
+
+    if (viewStack->currentIndex() == 0) {
+        targetNode = selectedVisualNode;
+    } else {
+        int currentRow = fileTable->currentRow();
+        if (currentRow >= 0) {
+            QTableWidgetItem* nameItem = fileTable->item(currentRow, 0);
+            if (nameItem) {
+                qlonglong ptrVal = nameItem->data(Qt::UserRole).toLongLong();
+                targetNode = reinterpret_cast<VisualNode*>(ptrVal);
+            }
+        }
+    }
+
+    if (!targetNode) {
+        QMessageBox::warning(this, "Rename", "Please select an item to rename first.");
+        return;
+    }
+    if (targetNode == rootVisualNode) {
+        QMessageBox::warning(this, "Rename", "The root directory cannot be renamed.");
+        return;
+    }
+
+    bool ok;
+    QString oldName = QString::fromStdString(targetNode->getFSNode()->getName());
+    QString newName = QInputDialog::getText(this, "Rename", "Please enter a new name:", QLineEdit::Normal, oldName, &ok);
+    if (!ok || newName.isEmpty() || newName == oldName) return;
+    if (!isValidItemName(newName)) {
+        QMessageBox::warning(this, "Rename", "Please enter a valid file or folder name.");
+        return;
+    }
+
+    try {
+        targetNode->getFSNode()->renameTo(newName.toStdString());
+        targetNode->update();
         if (viewStack->currentIndex() == 1) refreshListView();
+    } catch (const std::exception& e) {
+        QMessageBox::critical(this, "Rename failed", e.what());
     }
 }
 

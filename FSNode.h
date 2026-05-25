@@ -8,15 +8,22 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdint>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
 enum class NodeType { File, Folder };
 
 class FSNode {
+    friend class FolderNode;
+
 protected:
     fs::path path;
     NodeType type;
+
+    virtual void updatePath(const fs::path& newPath) {
+        path = newPath;
+    }
 
 public:
     FSNode(const fs::path& p, NodeType t) : path(p), type(t) {}
@@ -25,6 +32,23 @@ public:
     std::string getName() const { return path.filename().string(); }
     fs::path getPath() const { return path; }
     NodeType getType() const { return type; }
+
+    void renameTo(const std::string& newName) {
+        if (newName.empty() || newName == "." || newName == ".." ||
+            newName.find('/') != std::string::npos ||
+            newName.find('\\') != std::string::npos) {
+            throw std::runtime_error("Invalid file or folder name.");
+        }
+
+        fs::path newPath = path.parent_path() / newName;
+        if (newPath == path) return;
+        if (fs::exists(newPath)) {
+            throw std::runtime_error("An item with the same name already exists.");
+        }
+
+        fs::rename(path, newPath);
+        updatePath(newPath);
+    }
 
     // 新增虛擬函式：取得原始位元組大小
     virtual uintmax_t getSize() const {
@@ -66,6 +90,14 @@ class FolderNode : public FSNode {
 private:
     std::vector<std::shared_ptr<FSNode>> children;
 
+protected:
+    void updatePath(const fs::path& newPath) override {
+        path = newPath;
+        for (const auto& child : children) {
+            child->updatePath(path / child->getName());
+        }
+    }
+
 public:
     FolderNode(const fs::path& p) : FSNode(p, NodeType::Folder) {}
 
@@ -86,10 +118,21 @@ public:
         return child;
     }
 
-    std::shared_ptr<FSNode> createChildFile(const std::string& name) {
+    std::shared_ptr<FSNode> createChildFile(const std::string& name, uintmax_t size = 0) {
         fs::path childPath = path / name;
         fs::create_directories(childPath.parent_path()); 
-        std::ofstream(childPath).close(); 
+        std::ofstream file(childPath, std::ios::binary | std::ios::trunc);
+        if (!file) {
+            throw std::runtime_error("Unable to create file.");
+        }
+        if (size > 0) {
+            file.seekp(static_cast<std::streamoff>(size - 1));
+            file.put('\0');
+            if (!file) {
+                throw std::runtime_error("Unable to set file size.");
+            }
+        }
+        file.close();
         auto child = std::make_shared<FSNode>(childPath, NodeType::File);
         children.push_back(child);
         return child;

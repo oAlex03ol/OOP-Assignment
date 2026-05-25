@@ -47,7 +47,7 @@ public:
     const std::vector<CanvasEdge*>& getEdges() const { return edges; }
 
     // Define the extent of the node on the canvas (with the node's center as the origin).
-    QRectF boundingRect() const override { return QRectF(-76, -31, 152, 62); }
+    QRectF boundingRect() const override { return QRectF(-126, -31, 252, 62); }
     // Polymorphism : Draws the nodes on the screen (implemented in .cpp)
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 

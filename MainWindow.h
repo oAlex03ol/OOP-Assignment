@@ -7,7 +7,6 @@
 #include <QStackedWidget>
 #include <QTableWidget>
 #include <QLineEdit>
-#include <QSoundEffect>
 #include "VisualNode.h"
 
 class CustomView : public QGraphicsView {
@@ -54,6 +53,7 @@ public:
 private slots:
     void onCreateFolder();
     void onCreateFile();
+    void onRenameItem();
     void onDeleteItem();
     void onSelectionChanged();
     void onToggleView(); 
